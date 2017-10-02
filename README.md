@@ -9,4 +9,4 @@ Form elements include
 - Label
 - Button
 
-![sample_form](https://user-images.githubusercontent.com/7481680/31062142-67e6c48e-a6f6-11e7-8420-9a55cd4042c0.png)
+/media/generaldave/storage/Stuff/Programming Stuff/git/Python/pygame_form/README.md
