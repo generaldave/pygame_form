@@ -109,6 +109,26 @@ class Textbox(object):
                                       y = self.text_height)
         self.cursor = pygame.Rect(self.cursor_position, self.cursor_dimension)
 
+    def change_value(self, value) -> None:
+        '''
+        changes value of textbox.
+
+        Nothing is returned
+        '''
+
+        self.value = value
+        x, y = self.font.size(self.value)
+        overall_width = x
+        while overall_width > self.box_dimension.x - (self.border_width * 2):
+            self.value = self.value[:len(self.value) - 1]
+            x, y = self.font.size(self.value)
+            overall_width = x
+        self.value_object = self.font.render(self.value, self.antialias,
+                                             self.text_colour)
+        text_x = self.position.x + self.border_width * 2
+        text_y = int((self.box_dimension.y - self.text_height) / 2) + self.position.y
+        self.text_position = point(x = text_x, y = text_y)
+
     def update(self, events, fps) -> None:
         '''
         updates Texbox attributes and displays text, box, background, and
@@ -154,7 +174,10 @@ class Textbox(object):
 
                 elif event.key == pygame.K_RETURN or \
                      event.key == pygame.K_KP_ENTER:
-                    print ("hit enter")
+                    return True
+
+                elif event.key == pygame.K_ESCAPE:
+                    print ('Closing window')   # CLOSE THE APPLET
 
                 elif event.key == pygame.K_UP or \
                      event.key == pygame.K_DOWN or \
