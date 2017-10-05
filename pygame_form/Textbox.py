@@ -129,7 +129,7 @@ class Textbox(object):
         text_y = int((self.box_dimension.y - self.text_height) / 2) + self.position.y
         self.text_position = point(x = text_x, y = text_y)
 
-    def update(self, events, fps) -> None:
+    def update(self, events, fps) -> bool:
         '''
         updates Texbox attributes and displays text, box, background, and
         cursor appropriately.
@@ -137,7 +137,7 @@ class Textbox(object):
         events = pygame.events
         fps = int
 
-        Nothing is returned
+        Boolean is returned
         '''
 
         # Handle key presses
@@ -177,7 +177,7 @@ class Textbox(object):
                     return True
 
                 elif event.key == pygame.K_ESCAPE:
-                    print ('Closing window')   # CLOSE THE APPLET
+                    return False
 
                 elif event.key == pygame.K_UP or \
                      event.key == pygame.K_DOWN or \
@@ -263,3 +263,5 @@ class Textbox(object):
             if self.frame_count >= self.blink_seconds * fps:
                 self.cursor_visible = not self.cursor_visible
                 self.frame_count = 0
+
+        return None
