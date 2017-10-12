@@ -15,6 +15,16 @@ point = namedtuple('point', ['x', 'y'])
 colour = namedtuple('colour', ['r', 'g', 'b'])
 pygame.font.init()
 
+class textbox_event(object):
+    '''
+    Mocks an enumerable for textbox events
+    '''
+    
+    nothing = 0
+    enter = 1
+    click = 2
+    
+
 class Textbox(object):
     '''
     Textbox class for forms in Pygame. Can be used for input or output.
@@ -32,22 +42,23 @@ class Textbox(object):
                  text_colour = colour(r = 0, g = 0, b = 0),
                  box_colour = colour(r = 0, g = 0, b = 0),
                  border_width = 2,
-                 input_box = False) -> None:
+                 input_box = False):
         '''
         init for Textbox class.
-
-        screen = pygame.display
-        position = namedtuple('point', ['x', 'y'])
-        character_count = int
-        font_family = ttf
-        font_size = int
-        antialias = bool
-        text_colour = namedtuple('colour', ['r', 'g', 'b'])
-        box_colour = namedtuple('colour', ['r', 'g', 'b'])
-        border_width = int
-        input_box = bool
-
-        Nothing is returned
+        
+        Args:
+            screen (pygame.display): screen to draw textbox on
+            position (namedtuple('point', ['x', 'y'])): position of textbox
+            character_count (int): total number of characters allowed in textbox
+            font_family (ttf): font family of text in textbox
+            font_size (int): size of font for text in textbox
+            antialias (bool): whether or not text is antialiased
+            text_colour (namedtuple('colour', ['r', 'g', 'b'])): color of text
+                                                                 in textbox
+            box_colour (namedtuple('colour', ['r', 'g', 'b'])): color of textbox
+                                                                border
+            border_width (int): pixels wide for border of textbox
+            input_box (bool): whether or not typing is allowed in textbox
         '''
 
         # Screen variables
@@ -82,11 +93,9 @@ class Textbox(object):
         # Create Textbox objects
         self.create()
 
-    def create(self) -> None:
+    def create(self):
         '''
-        creates Textbox, text, and cursor objects.
-
-        Nothing is returned
+        Creates Textbox, text, and cursor objects.
         '''
 
         # Textbox
@@ -109,11 +118,12 @@ class Textbox(object):
                                       y = self.text_height)
         self.cursor = pygame.Rect(self.cursor_position, self.cursor_dimension)
 
-    def change_value(self, value) -> None:
+    def change_value(self, value):
         '''
-        changes value of textbox.
+        Changes value of textbox.
 
-        Nothing is returned
+        Args:
+            value (str): string value of the textbox
         '''
 
         self.value = value
@@ -129,19 +139,44 @@ class Textbox(object):
         text_y = int((self.box_dimension.y - self.text_height) / 2) + self.position.y
         self.text_position = point(x = text_x, y = text_y)
 
-    def update(self, events, fps) -> bool:
+    def clicked(self):
         '''
-        updates Texbox attributes and displays text, box, background, and
+        Decides whether or not textbox was clicked.
+
+        Returns:
+            True: textbox was clicked
+            False: textbox was not clicked
+        '''
+        
+        mouseX, mouseY = pygame.mouse.get_pos()
+        if mouseX > self.position.x and \
+           mouseX < self.position.x + self.box_dimension.x and \
+           mouseY > self.position.y and \
+           mouseY < self.position.y + self.box_dimension.y:
+            return True
+        return False
+
+    def update(self, events, fps):
+        '''
+        Updates Texbox attributes and displays text, box, background, and
         cursor appropriately.
 
-        events = pygame.events
-        fps = int
+        Args:
+            events (pygame.events): mouse click, keyboard key press
+            fps (int): applicaiton's frames per second
 
-        Boolean is returned
+        Returns:
+           textbox_event.nothing: 0 for nothing happening
+           textbox_event.enter: 1 if enter or return are hit
+           textbox_event.click: 2 if textbox is clicked
         '''
 
         # Handle key presses
         for event in events:
+            if event.type == pygame.MOUSEBUTTONUP:
+                if self.clicked() == True:
+                    return textbox_event.click
+                
             if event.type == pygame.KEYDOWN and \
                event.key != pygame.K_RSHIFT and \
                event.key != pygame.K_LSHIFT and \
@@ -174,10 +209,7 @@ class Textbox(object):
 
                 elif event.key == pygame.K_RETURN or \
                      event.key == pygame.K_KP_ENTER:
-                    return True
-
-                elif event.key == pygame.K_ESCAPE:
-                    return False
+                    return textbox_event.enter
 
                 elif event.key == pygame.K_UP or \
                      event.key == pygame.K_DOWN or \
@@ -204,6 +236,7 @@ class Textbox(object):
                      event.key == pygame.K_INSERT or \
                      event.key == pygame.K_PAGEUP or \
                      event.key == pygame.K_PAGEDOWN or \
+                     event.key == pygame.K_ESCAPE or \
                      event.key == pygame.K_F1 or \
                      event.key == pygame.K_F2 or \
                      event.key == pygame.K_F3 or \
@@ -264,4 +297,4 @@ class Textbox(object):
                 self.cursor_visible = not self.cursor_visible
                 self.frame_count = 0
 
-        return None
+        return textbox_event.nothing

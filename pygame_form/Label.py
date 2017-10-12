@@ -27,19 +27,19 @@ class Label(object):
                  font_family = 'Helvetica',
                  font_size = 20,
                  antialias = True,
-                 text_colour = colour(r = 0, g = 0, b = 0)) -> None:
+                 text_colour = colour(r = 0, g = 0, b = 0)):
         '''
         init for Label class.
 
-        screen = pygame.display
-        value = str
-        position = namedtuple('point', ['x', 'y'])
-        font_family = ttf
-        font_size = int
-        antialias = bool
-        text_colour = namedtuple('colour', ['r', 'g', 'b'])
-
-        Nothing is returned
+        Args:
+            screen (pygame.display): screen to draw label on
+            position (namedtuple('point', ['x', 'y'])): position of label
+            value (str): string value of label
+            font_family (ttf): font family of text in textbox
+            font_size (int): size of font for text in textbox
+            antialias (bool): whether or not text is antialiased
+            text_colour (namedtuple('colour', ['r', 'g', 'b'])): color of text
+                                                                 in label
         '''
 
         # Screen variables
@@ -58,22 +58,18 @@ class Label(object):
         # Create Textbox objects
         self.create()
 
-    def create(self) -> None:
+    def create(self):
         '''
-        creates Textbox, text, and cursor objects.
-
-        Nothing is returned
+        creates label and value objects.
         '''
 
         # Text
         self.value_object = self.font.render(self.value, self.antialias,
                                       self.text_colour)
 
-    def update(self) -> None:
+    def update(self):
         '''
         Redraws label value
-
-        Nothing is returned
         '''
 
         self.screen.blit(self.value_object, self.position)

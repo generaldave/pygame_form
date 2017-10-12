@@ -28,21 +28,21 @@ class Button(object):
                  font_size = 20,
                  antialias = True,
                  text_colour = colour(r = 0, g = 0, b = 0),
-                 box_colour = colour(r = 0, g = 0, b = 0)) -> None:
+                 box_colour = colour(r = 0, g = 0, b = 0)):
         '''
         init for Button class.
 
-        screen = pygame.display
-        position = namedtuple('point', ['x', 'y'])
-        value = str
-        character_count = int
-        font_family = ttf
-        font_size = int
-        antialias = bool
-        text_colour = namedtuple('colour', ['r', 'g', 'b'])
-        box_colour = namedtuple('colour', ['r', 'g', 'b'])
-
-        Nothing is returned
+        Args:
+            screen (pygame.display): screen to draw textbox on
+            position (namedtuple('point', ['x', 'y'])): position of button
+            character_count (int): total number of characters allowed in button
+            font_family (ttf): font family of text in button
+            font_size (int): size of font for text in button
+            antialias (bool): whether or not text is antialiased
+            text_colour (namedtuple('colour', ['r', 'g', 'b'])): color of text
+                                                                 in button
+            box_colour (namedtuple('colour', ['r', 'g', 'b'])): color of button
+                                                                background
         '''
 
         # Screen variables
@@ -66,11 +66,9 @@ class Button(object):
         # Create Button objects
         self.create()
 
-    def create(self) -> None:
+    def create(self):
         '''
         Creates button and value objects
-
-        Nothing is returned
         '''
         
         # Box
@@ -87,10 +85,13 @@ class Button(object):
         text_y = int((self.box_dimension.y - self.text_height) / 2) + self.position.y
         self.text_position = point(x = text_x, y = text_y)
 
-    def clicked(self, mouseX, mouseY) -> bool:
+    def clicked(self, mouseX, mouseY):
         '''
-        Decides whether or not button has been clicked. Returns True if yes
-        and False if not.
+        Decides whether or not button has been clicked.
+
+        Returns:
+            True: Button clicked
+            False: Button not clicked
         '''
 
         if mouseX > self.position.x and \
@@ -101,11 +102,9 @@ class Button(object):
 
         return False
 
-    def update(self) -> None:
+    def update(self):
         '''
         Displays button and value objects
-
-        Nothing is returned
         '''
         
         # Display Button
