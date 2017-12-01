@@ -6,6 +6,7 @@ Written in
 
 Form elements include
 - Textbox
+- InputBox, with password hiding feature
 - Label
 - Button
 
