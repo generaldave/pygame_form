@@ -3,7 +3,7 @@ David Fuller
 
 Textbox class for forms in Pygame
 
-2017-9-30
+2017-11-21
 '''
 
 import pygame
@@ -11,8 +11,8 @@ import os.path
 
 from collections import namedtuple
 
-point = namedtuple('point', ['x', 'y'])
-colour = namedtuple('colour', ['r', 'g', 'b'])
+from .Constants import point, color
+
 pygame.font.init()
 
 class textbox_event(object):
@@ -23,46 +23,41 @@ class textbox_event(object):
     nothing = 0
     enter = 1
     click = 2
+    tab = 3
     
 
 class Textbox(object):
     '''
-    Textbox class for forms in Pygame. Can be used for input or output.
-    Setting input_box to True makes it an input box. If set as input, a cursor
-    exists. Otherwise, it does not. The value of the textbox can be retrieved
-    using object.value.
+    Textbox class for forms in Pygame. The value of the textbox can be
+    retrieved using object.value.
     '''
 
-    def __init__(self, screen,
+    def __init__(self,
                  position = point(x = 0, y = 0),
                  character_count = 50,
                  font_family = 'Helvetica',
                  font_size = 20,
                  antialias = True,
-                 text_colour = colour(r = 0, g = 0, b = 0),
-                 box_colour = colour(r = 0, g = 0, b = 0),
-                 border_width = 2,
-                 input_box = False):
+                 text_color = color(r = 0, g = 0, b = 0),
+                 box_color = color(r = 0, g = 0, b = 0),
+                 border_width = 2):
         '''
         init for Textbox class.
         
         Args:
-            screen (pygame.display): screen to draw textbox on
             position (namedtuple('point', ['x', 'y'])): position of textbox
             character_count (int): total number of characters allowed in textbox
             font_family (ttf): font family of text in textbox
             font_size (int): size of font for text in textbox
             antialias (bool): whether or not text is antialiased
-            text_colour (namedtuple('colour', ['r', 'g', 'b'])): color of text
+            text_color (namedtuple('color', ['r', 'g', 'b'])): color of text
                                                                  in textbox
-            box_colour (namedtuple('colour', ['r', 'g', 'b'])): color of textbox
+            box_color (namedtuple('color', ['r', 'g', 'b'])): color of textbox
                                                                 border
             border_width (int): pixels wide for border of textbox
-            input_box (bool): whether or not typing is allowed in textbox
         '''
 
         # Screen variables
-        self.screen = screen
         self.position = position
 
         # Text variables
@@ -76,26 +71,16 @@ class Textbox(object):
         self.value = ''
 
         # Textbox variables
-        self.text_colour = text_colour
-        self.box_colour = box_colour
-        self.border_width = border_width
-
-        # Texbox type: input or not
-        self.input_box = input_box
-
-        # Cursor variables
-        self.cursor_visible = True
-        self.blink_seconds = 0.25
-        self.frame_count = 0
-        self.cursor_index = 0
-        self.cursor_position = None
+        self.text_color = text_color
+        self.box_color = box_color
+        self.border_width = border_width       
 
         # Create Textbox objects
         self.create()
 
     def create(self):
         '''
-        Creates Textbox, text, and cursor objects.
+        Creates Textbox and text objects.
         '''
 
         # Textbox
@@ -106,17 +91,10 @@ class Textbox(object):
 
         # Text
         self.value_object = self.font.render(self.value, self.antialias,
-                                             self.text_colour)
+                                             self.text_color)
         text_x = self.position.x + self.border_width * 2
         text_y = int((self.box_dimension.y - self.text_height) / 2) + self.position.y
         self.text_position = point(x = text_x, y = text_y)
-
-        # Cursor
-        self.cursor_position = point(x = self.text_position.x - int(self.border_width / 2),
-                                     y = int((self.box_dimension.y - self.text_height) / 2) + self.position.y)
-        self.cursor_dimension = point(x = 2,
-                                      y = self.text_height)
-        self.cursor = pygame.Rect(self.cursor_position, self.cursor_dimension)
 
     def change_value(self, value):
         '''
@@ -134,10 +112,94 @@ class Textbox(object):
             x, y = self.font.size(self.value)
             overall_width = x
         self.value_object = self.font.render(self.value, self.antialias,
-                                             self.text_colour)
+                                             self.text_color)
         text_x = self.position.x + self.border_width * 2
         text_y = int((self.box_dimension.y - self.text_height) / 2) + self.position.y
-        self.text_position = point(x = text_x, y = text_y)
+        self.text_position = point(x = text_x, y = text_y)    
+
+    def show(self, surface):
+        '''
+        Show textbox elements on screen.
+
+        Args:
+            surface (pygame surface): surface to draw on
+        '''
+        
+        # Display Textbox
+        pygame.draw.rect(surface, self.box_color,
+                         self.box, self.border_width)
+
+        # Display text
+        surface.blit(self.value_object, self.text_position)        
+
+class InputBox(Textbox):
+    '''
+    InputBox class for forms in Pygame. Can be used for input or password.
+    Setting is_password to True makes it a password input, where text is
+    masked. The value of the textbox can be retrieved using object.value.
+    '''
+    
+    def __init__(self,
+                 position = point(x = 0, y = 0),
+                 character_count = 50,
+                 font_family = 'Helvetica',
+                 font_size = 20,
+                 antialias = True,
+                 text_color = color(r = 0, g = 0, b = 0),
+                 box_color = color(r = 0, g = 0, b = 0),
+                 border_width = 2,
+                 is_password = False,
+                 tab_index = 0):
+        '''
+        init for InputBox class.
+        
+        Args:
+            position (namedtuple('point', ['x', 'y'])): position of InputBox
+            character_count (int): total number of characters allowed in InputBox
+            font_family (ttf): font family of text in InputBox
+            font_size (int): size of font for text in InputBox
+            antialias (bool): whether or not text is antialiased
+            text_color (namedtuple('color', ['r', 'g', 'b'])): color of text
+                                                                 in InputBox
+            box_color (namedtuple('color', ['r', 'g', 'b'])): color of InputBox
+                                                                border
+            border_width (int): pixels wide for border of InputBox
+            is_password (bool): whether or not text is masked
+        '''
+        
+        Textbox.__init__(self, position, character_count, font_family, font_size,
+                         antialias, text_color, box_color, border_width)
+
+        self.is_password = is_password
+        self.password = ''
+        self.tab_index = tab_index
+
+        self.active = False
+        if self.tab_index == 0:
+            self.active = True
+        
+         # Cursor variables
+        self.cursor_visible = True
+        self.blink_seconds = 0.25
+        self.frame_count = 0
+        self.cursor_index = 0
+        self.cursor_position = None
+
+        self.create()
+
+    def create(self):
+        '''
+        Creates InputBox objects.
+        '''
+        
+        Textbox.create(self)
+        
+        # Cursor
+        self.cursor_position = point(x = self.text_position.x - int(self.border_width / 2),
+                                     y = int((self.box_dimension.y - self.text_height) / 2) + self.position.y)
+        self.cursor_dimension = point(x = 2,
+                                      y = self.text_height)
+        self.cursor = pygame.Rect(self.cursor_position, self.cursor_dimension)
 
     def clicked(self):
         '''
@@ -179,21 +241,34 @@ class Textbox(object):
                 
             if event.type == pygame.KEYDOWN and \
                event.key != pygame.K_RSHIFT and \
-               event.key != pygame.K_LSHIFT and \
-               self.input_box == True:
+               event.key != pygame.K_LSHIFT:
 
                 if event.key == pygame.K_BACKSPACE:
-                    self.value = self.value[:max(self.cursor_index - 1, 0)] + \
+                    if self.is_password:
+                        self.password = self.password[:max(self.cursor_index - 1, 0)] + \
+                                        self.password[self.cursor_index:]
+                        self.value = ''
+                        for i in range(len(self.password)):
+                            self.value = self.value + '*'
+                    else:
+                        self.value = self.value[:max(self.cursor_index - 1, 0)] + \
                                         self.value[self.cursor_index:]
                     self.value_object = self.font.render(self.value, self.antialias,
-                                                         self.text_colour)
+                                                         self.text_color)
                     self.cursor_index = max(self.cursor_index - 1, 0)
 
                 elif event.key == pygame.K_DELETE:
-                    self.value = self.value[:self.cursor_index] + \
+                    if self.is_password:
+                        self.password = self.password[:self.cursor_index] + \
+                                        self.password[self.cursor_index + 1:]
+                        self.value = ''
+                        for i in range(len(self.password)):
+                            self.value = self.value + '*'
+                    else:
+                        self.value = self.value[:self.cursor_index] + \
                                         self.value[self.cursor_index + 1:]
                     self.value_object = self.font.render(self.value, self.antialias,
-                                          self.text_colour)
+                                          self.text_color)
 
                 elif event.key == pygame.K_LEFT:
                     self.cursor_index = max(self.cursor_index - 1, 0)
@@ -210,6 +285,10 @@ class Textbox(object):
                 elif event.key == pygame.K_RETURN or \
                      event.key == pygame.K_KP_ENTER:
                     return textbox_event.enter
+
+                elif event.key == pygame.K_TAB:
+                    self.active = False
+                    return textbox_event.tab
 
                 elif event.key == pygame.K_UP or \
                      event.key == pygame.K_DOWN or \
@@ -232,7 +311,6 @@ class Textbox(object):
                      event.key == pygame.K_MENU or \
                      event.key == pygame.K_POWER or \
                      event.key == pygame.K_EURO or \
-                     event.key == pygame.K_TAB or \
                      event.key == pygame.K_INSERT or \
                      event.key == pygame.K_PAGEUP or \
                      event.key == pygame.K_PAGEDOWN or \
@@ -255,46 +333,59 @@ class Textbox(object):
                     pass
 
                 else:
-                    overall_width = 0
-                    for i in range(self.cursor_index):
-                        x, y = self.font.size(self.value[i])
-                        overall_width += x
-                    width, height = self.font.size(event.unicode)
-                    if overall_width + width < self.box_dimension.x - (self.border_width * 2):
-                        try:
-                            self.value = self.value[:self.cursor_index] + \
-                                                event.unicode + \
-                                                self.value[self.cursor_index:]
-                            self.value_object = self.font.render(self.value, self.antialias,
-                                                                 self.text_colour)
-                            self.cursor_index = self.cursor_index + 1
-                        except:
-                            pass
-                    
-                cursor_x = self.text_position.x - int(self.border_width / 2)
-                space_count = 0
-                for i in range(self.cursor_index):
-                    x, y = self.font.size(self.value[i])
-                    cursor_x = cursor_x + x
-                self.cursor_position = self.cursor_position._replace(x = cursor_x)
-                self.cursor = pygame.Rect(self.cursor_position, self.cursor_dimension)
-                
-        # Display Textbox
-        pygame.draw.rect(self.screen, self.box_colour,
-                         self.box, self.border_width)
-
-        # Display text
-        self.screen.blit(self.value_object, self.text_position)
-
-        # Display cursor
-        if (self.cursor_visible == True and self.input_box == True):
-            pygame.draw.rect(self.screen, self.text_colour, self.cursor)
+                    if self.active:
+                        overall_width = 0
+                        for i in range(self.cursor_index):
+                            x, y = self.font.size(self.value[i])
+                            overall_width += x
+                        width, height = self.font.size(event.unicode)
+                        if overall_width + width < self.box_dimension.x - (self.border_width * 2):
+                            try:
+                                if self.is_password:
+                                    self.password = self.password[:self.cursor_index] + \
+                                                    event.unicode + \
+                                                    self.password[self.cursor_index:]
+                                    self.value = ''
+                                    for i in range(len(self.password)):
+                                        self.value = self.value + '*'
+                                else:
+                                    self.value = self.value[:self.cursor_index] + \
+                                                    event.unicode + \
+                                                    self.value[self.cursor_index:]
+                                self.value_object = self.font.render(self.value, self.antialias,
+                                                                     self.text_color)
+                                self.cursor_index = self.cursor_index + 1
+                            except:
+                                pass
 
         # Handle cursor visibility
-        if self.input_box == True:
+        if self.active:
             self.frame_count = self.frame_count + 1
             if self.frame_count >= self.blink_seconds * fps:
                 self.cursor_visible = not self.cursor_visible
                 self.frame_count = 0
+                
+            cursor_x = self.text_position.x - int(self.border_width / 2)
+            space_count = 0
+            for i in range(self.cursor_index):
+                x, y = self.font.size(self.value[i])
+                cursor_x = cursor_x + x
+            self.cursor_position = self.cursor_position._replace(x = cursor_x)
+            self.cursor = pygame.Rect(self.cursor_position, self.cursor_dimension)
+            
+        return textbox_event.nothing         
 
-        return textbox_event.nothing
+    def show(self, surface):
+        '''
+        Show InputBox elements on screen.
+
+        Args:
+            surface (pygame surface): surface to draw on
+        '''
+        
+        Textbox.show(self, surface)
+        
+        # Display cursor
+        if self.active:
+            if (self.cursor_visible == True):
+                pygame.draw.rect(surface, self.text_color, self.cursor)
