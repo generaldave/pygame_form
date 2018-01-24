@@ -9,8 +9,6 @@ Label class for forms in Pygame
 import pygame
 import os.path
 
-from collections import namedtuple
-
 from .Constants import point, color
 
 pygame.font.init()
