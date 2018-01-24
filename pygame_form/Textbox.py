@@ -9,8 +9,6 @@ Textbox class for forms in Pygame
 import pygame
 import os.path
 
-from collections import namedtuple
-
 from .Constants import point, color
 
 pygame.font.init()
@@ -40,6 +38,7 @@ class Textbox(object):
                  antialias = True,
                  text_color = color(r = 0, g = 0, b = 0),
                  box_color = color(r = 0, g = 0, b = 0),
+                 background_color = color(r = 127, g = 127, b = 127),
                  border_width = 2):
         '''
         init for Textbox class.
@@ -54,6 +53,9 @@ class Textbox(object):
                                                                  in textbox
             box_color (namedtuple('color', ['r', 'g', 'b'])): color of textbox
                                                                 border
+            background_color (namedtuple('color', ['r', 'g', 'b'])): color of
+                                                                     textbox
+                                                                     background
             border_width (int): pixels wide for border of textbox
         '''
 
@@ -73,7 +75,10 @@ class Textbox(object):
         # Textbox variables
         self.text_color = text_color
         self.box_color = box_color
-        self.border_width = border_width       
+        self.background_color = background_color
+        self.border_width = border_width
+        self.text_align = 'left'
+        self.bold = False
 
         # Create Textbox objects
         self.create()
@@ -89,11 +94,37 @@ class Textbox(object):
                                    y = self.text_height + self.border_width * 2)
         self.box = pygame.Rect(self.position, self.box_dimension)
 
-        # Text
+        # Decorate text
+        self.align()
+        self.set_bold()
+
+        # Set texxt object
         self.value_object = self.font.render(self.value, self.antialias,
                                              self.text_color)
-        text_x = self.position.x + self.border_width * 2
-        text_y = int((self.box_dimension.y - self.text_height) / 2) + self.position.y
+        
+    def set_bold(self):
+        '''
+        Sets whether Cell text is bold or not.
+        '''
+
+        self.font.set_bold(self.bold)
+        self.align()
+
+        # Set texxt object
+        self.value_object = self.font.render(self.value, self.antialias,
+                                             self.text_color)
+
+    def align(self):
+        '''
+        Aligns text in Textbox.
+        '''
+        
+        text_width, text_height = self.font.size(self.value)
+        if self.text_align == 'left':
+            text_x = self.position.x + self.border_width * 2
+        elif self.text_align == 'center':
+            text_x = int((self.box_dimension.x - text_width) / 2) + self.position.x
+        text_y = int((self.box_dimension.y - text_height) / 2) + self.position.y
         self.text_position = point(x = text_x, y = text_y)
 
     def change_value(self, value):
@@ -105,17 +136,22 @@ class Textbox(object):
         '''
 
         self.value = value
+
+        # Make text fit box
         x, y = self.font.size(self.value)
         overall_width = x
         while overall_width > self.box_dimension.x - (self.border_width * 2):
             self.value = self.value[:len(self.value) - 1]
             x, y = self.font.size(self.value)
             overall_width = x
+
+        # Decorate text
+        self.align()
+        self.set_bold()
+
+        # Set text object
         self.value_object = self.font.render(self.value, self.antialias,
-                                             self.text_color)
-        text_x = self.position.x + self.border_width * 2
-        text_y = int((self.box_dimension.y - self.text_height) / 2) + self.position.y
-        self.text_position = point(x = text_x, y = text_y)    
+                                             self.text_color) 
 
     def show(self, surface):
         '''
@@ -126,6 +162,8 @@ class Textbox(object):
         '''
         
         # Display Textbox
+        pygame.draw.rect(surface, self.background_color,
+                         self.box)
         pygame.draw.rect(surface, self.box_color,
                          self.box, self.border_width)
 
@@ -147,6 +185,7 @@ class InputBox(Textbox):
                  antialias = True,
                  text_color = color(r = 0, g = 0, b = 0),
                  box_color = color(r = 0, g = 0, b = 0),
+                 background_color = color(r = 127, g = 127, b = 127),
                  border_width = 2,
                  is_password = False,
                  tab_index = 0):
@@ -163,12 +202,16 @@ class InputBox(Textbox):
                                                                  in InputBox
             box_color (namedtuple('color', ['r', 'g', 'b'])): color of InputBox
                                                                 border
+            background_color (namedtuple('color', ['r', 'g', 'b'])): color of
+                                                                     InputBox
+                                                                     background
             border_width (int): pixels wide for border of InputBox
             is_password (bool): whether or not text is masked
         '''
         
         Textbox.__init__(self, position, character_count, font_family, font_size,
-                         antialias, text_color, box_color, border_width)
+                         antialias, text_color, box_color, backgroun_color,
+                         border_width)
 
         self.is_password = is_password
         self.password = ''
